@@ -1,34 +1,62 @@
-import { logout } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function Home() {
+export default async function HomePage() {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getSession();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  let profile = null;
+  let profileError = null;
+
+  if (user) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    profile = data;
+    profileError = error;
+  }
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold">Virtual Ride Web</h1>
-      <p className="mt-2">Supabase 接続確認ページ</p>
+    <main className="min-h-screen p-6">
+      <div className="mx-auto max-w-3xl space-y-6">
+        <h1 className="text-2xl font-bold">ホーム</h1>
 
-      <pre className="mt-4 rounded bg-gray-100 p-4 text-sm text-black">
-        {JSON.stringify(
-          {
-            hasSession: !!data.session,
-            error: error?.message ?? null,
-          },
-          null,
-          2
-        )}
-      </pre>
+        <section className="rounded border p-4">
+          <h2 className="mb-2 text-lg font-semibold">認証確認</h2>
+          <pre className="overflow-x-auto text-sm">
+            {JSON.stringify(
+              {
+                hasSession: !!user,
+                userId: user?.id ?? null,
+                email: user?.email ?? null,
+                userError,
+              },
+              null,
+              2
+            )}
+          </pre>
+        </section>
 
-      <form action={logout} className="mt-4">
-        <button
-          type="submit"
-          className="rounded bg-white px-4 py-2 text-black"
-        >
-          ログアウト
-        </button>
-      </form>
+        <section className="rounded border p-4">
+          <h2 className="mb-2 text-lg font-semibold">プロフィール確認</h2>
+          <pre className="overflow-x-auto text-sm">
+            {JSON.stringify(
+              {
+                profile,
+                profileError,
+              },
+              null,
+              2
+            )}
+          </pre>
+        </section>
+      </div>
     </main>
   );
 }
