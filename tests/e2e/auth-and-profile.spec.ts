@@ -94,8 +94,8 @@ test.describe("auth and profile e2e", () => {
     await page.goto("/");
     await expect(page.getByText(username)).toBeVisible();
     });
-
-test("/profile で不正な username は保存できない", async ({ page }) => {
+    
+  test("/profile で不正な username は保存できない", async ({ page }) => {
     await login(page);
 
     await page.goto("/profile");
@@ -111,4 +111,31 @@ test("/profile で不正な username は保存できない", async ({ page }) =>
     await expect(page.getByText("アンダースコアは連続で使用できません")).toBeVisible();
     await expect(page.locator('input[name="username"]')).toHaveValue(beforeValue);
     });
+
+test("公開プロフィールページを表示できる", async ({ page }) => {
+    await login(page);
+
+    await page.goto("/profile");
+    await expect(page.getByRole("heading", { name: "プロフィール編集" })).toBeVisible();
+
+    const suffix = Date.now().toString().slice(-6);
+    const username = `e2e_user_${suffix}`;
+    const displayName = `E2E公開表示名-${suffix}`;
+    const bio = `E2E公開プロフィール-${suffix}`;
+
+    await page.locator('input[name="username"]').fill(username);
+    await page.locator('input[name="display_name"]').fill(displayName);
+    await page.locator('textarea[name="bio"]').fill(bio);
+
+    await page.getByRole("button", { name: "保存する" }).click();
+    await page.waitForURL(/\/profile\?message=/);
+    await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
+
+    await page.goto(`/users/${username}`);
+
+    await expect(page.getByRole("heading", { name: "公開プロフィール" })).toBeVisible();
+    await expect(page.getByText(username)).toBeVisible();
+    await expect(page.getByText(displayName)).toBeVisible();
+    await expect(page.getByText(bio)).toBeVisible();
+  });
 });
