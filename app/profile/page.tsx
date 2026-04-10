@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { saveProfile } from "@/lib/auth/profile-actions";
+import { buildPublicProfilePath } from "@/lib/profile/public-profile-link";
 
 type ProfilePageProps = {
   searchParams: Promise<{
@@ -29,6 +31,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     .eq("id", user.id)
     .maybeSingle();
 
+  const publicProfilePath = buildPublicProfilePath(profile?.username ?? null);
+
   return (
     <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl space-y-6">
@@ -44,6 +48,17 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           <div className="rounded border border-red-500/40 bg-red-500/10 p-4 text-sm">
             プロフィールの取得に失敗しました: {profileError.message}
           </div>
+        ) : null}
+
+        {publicProfilePath ? (
+          <section className="rounded border p-4">
+            <Link
+              href={publicProfilePath}
+              className="text-sm underline underline-offset-4 hover:opacity-80"
+            >
+              公開プロフィールを見る
+            </Link>
+          </section>
         ) : null}
 
         <section className="rounded border p-4">
