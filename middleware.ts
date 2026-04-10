@@ -3,6 +3,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+
+  const isAuthPage =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup");
+
+  const isPublicProfilePage = pathname.startsWith("/users/");
+
   const res = NextResponse.next();
 
   const supabase = createServerClient(
@@ -26,11 +34,7 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const isAuthPage =
-    req.nextUrl.pathname.startsWith("/login") ||
-    req.nextUrl.pathname.startsWith("/signup");
-
-  if (!session && !isAuthPage) {
+  if (!session && !isAuthPage && !isPublicProfilePage) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 

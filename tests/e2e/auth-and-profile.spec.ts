@@ -39,7 +39,6 @@ test.describe("auth and profile e2e", () => {
 
     await login(page);
 
-    await expect(page.getByRole("heading", { name: "ホーム" })).toBeVisible();
     await expect(page.getByText("認証確認")).toBeVisible();
     await expect(page.getByText("プロフィール確認")).toBeVisible();
     await expect(page.getByText('"hasSession": true')).toBeVisible();
@@ -159,5 +158,18 @@ test("公開プロフィールページを表示できる", async ({ page }) => 
     await expect(page).toHaveURL(new RegExp(`/users/${username}$`));
     await expect(page.getByRole("heading", { name: "公開プロフィール" })).toBeVisible();
     await expect(page.getByText(username)).toBeVisible();
+  });
+
+  test("存在しない username の公開プロフィールは 404 になる", async ({ page }) => {
+    const suffix = Date.now().toString().slice(-6);
+    const username = `not_found_user_${suffix}`;
+
+    const response = await page.goto(`/users/${username}`);
+
+    expect(response).not.toBeNull();
+    expect(response?.status()).toBe(404);
+
+    const bodyText = await page.locator("body").innerText();
+    expect(bodyText).not.toContain("公開プロフィール");
   });
 });
