@@ -1,0 +1,160 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { saveProfile } from "@/lib/auth/profile-actions";
+
+type ProfilePageProps = {
+  searchParams: Promise<{
+    message?: string;
+  }>;
+};
+
+export default async function ProfilePage({ searchParams }: ProfilePageProps) {
+  const params = await searchParams;
+  const message = params.message ? decodeURIComponent(params.message) : null;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/login");
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  return (
+    <main className="min-h-screen p-6">
+      <div className="mx-auto max-w-2xl space-y-6">
+        <h1 className="text-2xl font-bold">プロフィール編集</h1>
+
+        {message ? (
+          <div className="rounded border border-white/20 bg-white/5 p-4 text-sm">
+            {message}
+          </div>
+        ) : null}
+
+        {profileError ? (
+          <div className="rounded border border-red-500/40 bg-red-500/10 p-4 text-sm">
+            プロフィールの取得に失敗しました: {profileError.message}
+          </div>
+        ) : null}
+
+        <section className="rounded border p-4">
+          <form action={saveProfile} className="space-y-4">
+            <div className="space-y-1">
+              <label htmlFor="email" className="block text-sm font-medium">
+                メールアドレス
+              </label>
+              <input
+                id="email"
+                value={user.email ?? ""}
+                disabled
+                className="w-full rounded border bg-transparent px-3 py-2 opacity-70"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="display_name" className="block text-sm font-medium">
+                表示名
+              </label>
+              <input
+                id="display_name"
+                name="display_name"
+                defaultValue={profile?.display_name ?? ""}
+                className="w-full rounded border bg-transparent px-3 py-2"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="username" className="block text-sm font-medium">
+                ユーザー名
+              </label>
+              <input
+                id="username"
+                name="username"
+                defaultValue={profile?.username ?? ""}
+                className="w-full rounded border bg-transparent px-3 py-2"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="space-y-1">
+                <label htmlFor="height_cm" className="block text-sm font-medium">
+                  身長(cm)
+                </label>
+                <input
+                  id="height_cm"
+                  name="height_cm"
+                  type="number"
+                  defaultValue={profile?.height_cm ?? ""}
+                  className="w-full rounded border bg-transparent px-3 py-2"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="weight_kg" className="block text-sm font-medium">
+                  体重(kg)
+                </label>
+                <input
+                  id="weight_kg"
+                  name="weight_kg"
+                  type="number"
+                  step="0.1"
+                  defaultValue={profile?.weight_kg ?? ""}
+                  className="w-full rounded border bg-transparent px-3 py-2"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="ftp_w" className="block text-sm font-medium">
+                  FTP(W)
+                </label>
+                <input
+                  id="ftp_w"
+                  name="ftp_w"
+                  type="number"
+                  defaultValue={profile?.ftp_w ?? ""}
+                  className="w-full rounded border bg-transparent px-3 py-2"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="bio" className="block text-sm font-medium">
+                自己紹介
+              </label>
+              <textarea
+                id="bio"
+                name="bio"
+                rows={5}
+                defaultValue={profile?.bio ?? ""}
+                className="w-full rounded border bg-transparent px-3 py-2"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="rounded bg-white px-4 py-2 text-black hover:opacity-90"
+            >
+              保存する
+            </button>
+          </form>
+        </section>
+
+        <section className="rounded border p-4">
+          <h2 className="mb-2 text-lg font-semibold">現在のプロフィール値</h2>
+          <pre className="overflow-x-auto text-sm">
+            {JSON.stringify(profile, null, 2)}
+          </pre>
+        </section>
+      </div>
+    </main>
+  );
+}

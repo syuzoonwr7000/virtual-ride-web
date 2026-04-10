@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function HomePage() {
@@ -26,6 +27,15 @@ export default async function HomePage() {
     <main className="min-h-screen p-6">
       <div className="mx-auto max-w-3xl space-y-6">
         <h1 className="text-2xl font-bold">ホーム</h1>
+
+        <div className="flex gap-3">
+          <Link
+            href="/profile"
+            className="rounded border px-4 py-2 text-sm hover:bg-white/10"
+          >
+            プロフィール編集へ
+          </Link>
+        </div>
 
         <section className="rounded border p-4">
           <h2 className="mb-2 text-lg font-semibold">認証確認</h2>
