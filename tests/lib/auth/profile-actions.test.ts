@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { prepareProfileInput } from "@/lib/auth/profile-actions";
+import { prepareProfileInput } from "@/lib/profile/prepare-profile-input";
 
 describe("prepareProfileInput", () => {
   it("不正な username の場合は失敗を返す", () => {
