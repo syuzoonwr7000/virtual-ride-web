@@ -18,9 +18,11 @@ async function login(page: Page) {
   await emailInput.fill(loginEmail);
   await passwordInput.fill(loginPassword);
 
-  await page.getByRole("button", { name: /ログイン|login/i }).click();
+  await Promise.all([
+    page.waitForURL("**/"),
+    page.getByRole("button", { name: /ログイン|login/i }).click(),
+  ]);
 
-  await page.waitForURL("**/");
   await expect(page).toHaveURL(/\/$/);
 }
 
@@ -92,8 +94,8 @@ test.describe("auth and profile e2e", () => {
 
     await page.goto("/");
     await expect(page.getByText(username)).toBeVisible();
-    });
-    
+  });
+
   test("/profile で不正な username は保存できない", async ({ page }) => {
     await login(page);
 
@@ -109,9 +111,9 @@ test.describe("auth and profile e2e", () => {
 
     await expect(page.getByText("アンダースコアは連続で使用できません")).toBeVisible();
     await expect(page.locator('input[name="username"]')).toHaveValue(beforeValue);
-    });
+  });
 
-test("公開プロフィールページを表示できる", async ({ page }) => {
+  test("公開プロフィールページを表示できる", async ({ page }) => {
     await login(page);
 
     await page.goto("/profile");
@@ -153,9 +155,14 @@ test("公開プロフィールページを表示できる", async ({ page }) => 
     await page.waitForURL(/\/profile\?message=/);
     await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
 
-    await page.getByRole("link", { name: "公開プロフィールを見る" }).click();
+    const publicProfileLink = page.locator(`a[href="/users/${username}"]`);
+    await expect(publicProfileLink).toBeVisible();
 
-    await expect(page).toHaveURL(new RegExp(`/users/${username}$`));
+    await Promise.all([
+      page.waitForURL(new RegExp(`/users/${username}$`)),
+      publicProfileLink.click(),
+    ]);
+
     await expect(page.getByRole("heading", { name: "公開プロフィール" })).toBeVisible();
     await expect(page.getByText(username)).toBeVisible();
   });
@@ -171,5 +178,57 @@ test("公開プロフィールページを表示できる", async ({ page }) => 
 
     const bodyText = await page.locator("body").innerText();
     expect(bodyText).not.toContain("公開プロフィール");
+  });
+
+  test("アバター画像をアップロードするとプロフィール画面と公開プロフィール画面の両方で表示される", async ({
+    page,
+  }) => {
+    await login(page);
+
+    await page.goto("/profile");
+    await expect(page.getByRole("heading", { name: "プロフィール編集" })).toBeVisible();
+
+    const suffix = Date.now().toString().slice(-6);
+    const username = `e2e_user_${suffix}`;
+    const displayName = `E2Eアバター表示名-${suffix}`;
+
+    await page.locator('input[name="username"]').fill(username);
+    await page.locator('input[name="display_name"]').fill(displayName);
+
+    const avatarInput = page.locator('input[type="file"][name="avatar"]');
+    await expect(avatarInput).toHaveCount(1);
+
+    await avatarInput.setInputFiles({
+      name: "avatar.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wn8n6sAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
+
+    await page.getByRole("button", { name: "保存する" }).click();
+    await page.waitForURL(/\/profile\?message=/);
+
+    await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
+
+    const profileAvatarImage = page.locator('img[alt*="avatar" i], img[alt*="アバター"]');
+    await expect(profileAvatarImage.first()).toBeVisible();
+
+    const profileAvatarSrc = await profileAvatarImage.first().getAttribute("src");
+    expect(profileAvatarSrc).toBeTruthy();
+    expect(profileAvatarSrc).toMatch(/^https?:\/\//);
+
+    await page.goto(`/users/${username}`);
+    await expect(page.getByRole("heading", { name: "公開プロフィール" })).toBeVisible();
+    await expect(page.getByText(username)).toBeVisible();
+    await expect(page.getByText(displayName)).toBeVisible();
+
+    const publicAvatarImage = page.locator('img[alt*="avatar" i], img[alt*="アバター"]');
+    await expect(publicAvatarImage.first()).toBeVisible();
+
+    const publicAvatarSrc = await publicAvatarImage.first().getAttribute("src");
+    expect(publicAvatarSrc).toBeTruthy();
+    expect(publicAvatarSrc).toBe(profileAvatarSrc);
   });
 });
