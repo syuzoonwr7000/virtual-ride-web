@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { saveProfile } from "@/lib/auth/profile-actions";
 import { buildPublicProfilePath } from "@/lib/profile/public-profile-link";
+import { getAvatarFallbackText } from "@/lib/profile/avatar";
 
 type ProfilePageProps = {
   searchParams: Promise<{
@@ -32,6 +33,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     .maybeSingle();
 
   const publicProfilePath = buildPublicProfilePath(profile?.username ?? null);
+  const avatarFallback = getAvatarFallbackText(
+    profile?.display_name ?? null,
+    profile?.username ?? null
+  );
 
   return (
     <main className="min-h-screen p-6">
@@ -49,6 +54,22 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             プロフィールの取得に失敗しました: {profileError.message}
           </div>
         ) : null}
+
+        <section className="rounded border p-4">
+          <h2 className="mb-3 text-lg font-semibold">現在のアバター</h2>
+
+          {profile?.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt="現在のアバター"
+              className="h-20 w-20 rounded-full border object-cover"
+            />
+          ) : (
+            <div className="flex h-20 w-20 items-center justify-center rounded-full border text-2xl font-bold">
+              {avatarFallback}
+            </div>
+          )}
+        </section>
 
         {publicProfilePath ? (
           <section className="rounded border p-4">

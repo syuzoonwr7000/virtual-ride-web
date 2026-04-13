@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mapProfileToPublicProfileView } from "@/lib/profile/public-profile";
+import { getAvatarFallbackText } from "@/lib/profile/avatar";
 
 type PageProps = {
   params: Promise<{
@@ -28,20 +29,37 @@ export default async function PublicProfilePage({ params }: PageProps) {
   }
 
   const profile = mapProfileToPublicProfileView(data);
+  const avatarFallback = getAvatarFallbackText(profile.displayName, profile.username);
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
       <h1 className="text-2xl font-bold">公開プロフィール</h1>
 
-      <section className="space-y-4 rounded border p-4">
-        <div>
-          <p className="text-sm text-gray-400">ユーザー名</p>
-          <p className="text-base font-medium">{profile.username}</p>
-        </div>
+      <section className="rounded border p-4">
+        <div className="flex items-center gap-4">
+          {profile.avatarUrl ? (
+            <img
+              src={profile.avatarUrl}
+              alt={`${profile.displayName}のアバター`}
+              className="h-20 w-20 rounded-full border object-cover"
+            />
+          ) : (
+            <div className="flex h-20 w-20 items-center justify-center rounded-full border text-2xl font-bold">
+              {avatarFallback}
+            </div>
+          )}
 
-        <div>
-          <p className="text-sm text-gray-400">表示名</p>
-          <p className="text-base font-medium">{profile.displayName}</p>
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm text-gray-400">ユーザー名</p>
+              <p className="text-base font-medium">{profile.username}</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-400">表示名</p>
+              <p className="text-base font-medium">{profile.displayName}</p>
+            </div>
+          </div>
         </div>
       </section>
 
