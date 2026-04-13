@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildAvatarStoragePath, validateAvatarFile } from "@/lib/profile/avatar-upload";
+import {
+  buildAvatarStoragePath,
+  extractAvatarStoragePathFromUrl,
+  getOldAvatarStoragePathForDelete,
+  validateAvatarFile,
+} from "@/lib/profile/avatar-upload";
 
 function createFile(options: {
   name: string;
@@ -102,5 +107,99 @@ describe("buildAvatarStoragePath", () => {
     );
 
     expect(result).toBe("avatars/user-123-1710000000000.jpg");
+  });
+});
+
+describe("extractAvatarStoragePathFromUrl", () => {
+  it("Supabase Storage の public URL から storage path を取り出せる", () => {
+    const result = extractAvatarStoragePathFromUrl(
+      "https://example.supabase.co/storage/v1/object/public/avatars/avatars/user-123-1710000000000.png"
+    );
+
+    expect(result).toBe("avatars/user-123-1710000000000.png");
+  });
+
+  it("URLエンコードされた path もデコードして取り出せる", () => {
+    const result = extractAvatarStoragePathFromUrl(
+      "https://example.supabase.co/storage/v1/object/public/avatars/avatars%2Fuser-123-1710000000000.png"
+    );
+
+    expect(result).toBe("avatars/user-123-1710000000000.png");
+  });
+
+  it("avatars バケット以外のURLは null を返す", () => {
+    const result = extractAvatarStoragePathFromUrl(
+      "https://example.supabase.co/storage/v1/object/public/other-bucket/file.png"
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it("不正なURLは null を返す", () => {
+    const result = extractAvatarStoragePathFromUrl("not-a-valid-url");
+
+    expect(result).toBeNull();
+  });
+
+  it("URLが空文字なら null を返す", () => {
+    const result = extractAvatarStoragePathFromUrl("");
+
+    expect(result).toBeNull();
+  });
+});
+
+describe("getOldAvatarStoragePathForDelete", () => {
+  it("旧 avatar_url があり新 avatar_url と異なる場合は削除対象 path を返す", () => {
+    const result = getOldAvatarStoragePathForDelete({
+      currentAvatarUrl:
+        "https://example.supabase.co/storage/v1/object/public/avatars/avatars/user-123-1710000000000.png",
+      nextAvatarUrl:
+        "https://example.supabase.co/storage/v1/object/public/avatars/avatars/user-123-1710000009999.png",
+    });
+
+    expect(result).toBe("avatars/user-123-1710000000000.png");
+  });
+
+  it("旧 avatar_url が null の場合は削除対象なしで null を返す", () => {
+    const result = getOldAvatarStoragePathForDelete({
+      currentAvatarUrl: null,
+      nextAvatarUrl:
+        "https://example.supabase.co/storage/v1/object/public/avatars/avatars/user-123-1710000009999.png",
+    });
+
+    expect(result).toBeNull();
+  });
+
+  it("新旧 avatar_url が同じ場合は削除対象なしで null を返す", () => {
+    const url =
+      "https://example.supabase.co/storage/v1/object/public/avatars/avatars/user-123-1710000000000.png";
+
+    const result = getOldAvatarStoragePathForDelete({
+      currentAvatarUrl: url,
+      nextAvatarUrl: url,
+    });
+
+    expect(result).toBeNull();
+  });
+
+  it("旧 avatar_url が avatars バケットのURLでない場合は削除対象なしで null を返す", () => {
+    const result = getOldAvatarStoragePathForDelete({
+      currentAvatarUrl:
+        "https://example.supabase.co/storage/v1/object/public/other-bucket/file.png",
+      nextAvatarUrl:
+        "https://example.supabase.co/storage/v1/object/public/avatars/avatars/user-123-1710000009999.png",
+    });
+
+    expect(result).toBeNull();
+  });
+
+  it("新 avatar_url が未設定でも旧 avatar_url があれば削除対象 path を返す", () => {
+    const result = getOldAvatarStoragePathForDelete({
+      currentAvatarUrl:
+        "https://example.supabase.co/storage/v1/object/public/avatars/avatars/user-123-1710000000000.png",
+      nextAvatarUrl: null,
+    });
+
+    expect(result).toBe("avatars/user-123-1710000000000.png");
   });
 });

@@ -3,7 +3,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/action";
 import { prepareProfileInput } from "@/lib/profile/prepare-profile-input";
-import { buildAvatarStoragePath, validateAvatarFile } from "@/lib/profile/avatar-upload";
+import {
+  buildAvatarStoragePath,
+  getOldAvatarStoragePathForDelete,
+  validateAvatarFile,
+} from "@/lib/profile/avatar-upload";
 import { decideAvatarUrlForSave } from "@/lib/profile/avatar-upload-plan";
 
 export async function saveProfile(formData: FormData) {
@@ -27,7 +31,9 @@ export async function saveProfile(formData: FormData) {
   if (currentProfileError) {
     redirect(
       "/profile?message=" +
-        encodeURIComponent(`プロフィールの取得に失敗しました: ${currentProfileError.message}`)
+        encodeURIComponent(
+          `プロフィールの取得に失敗しました: ${currentProfileError.message}`
+        )
     );
   }
 
@@ -46,7 +52,9 @@ export async function saveProfile(formData: FormData) {
 
   const avatarFileValue = formData.get("avatar");
   const avatarFile =
-    avatarFileValue instanceof File && avatarFileValue.size > 0 ? avatarFileValue : null;
+    avatarFileValue instanceof File && avatarFileValue.size > 0
+      ? avatarFileValue
+      : null;
 
   const avatarValidation = validateAvatarFile(avatarFile);
 
@@ -54,29 +62,41 @@ export async function saveProfile(formData: FormData) {
     redirect("/profile?message=" + encodeURIComponent(avatarValidation.message));
   }
 
+  const currentAvatarUrl = currentProfile?.avatar_url ?? null;
   let uploadedAvatarUrl: string | null = null;
 
   if (avatarFile) {
-    const storagePath = buildAvatarStoragePath(user.id, avatarFile.name, Date.now());
+    const storagePath = buildAvatarStoragePath(
+      user.id,
+      avatarFile.name,
+      Date.now()
+    );
 
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(storagePath, avatarFile, {
-      upsert: true,
-      contentType: avatarFile.type,
-    });
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(storagePath, avatarFile, {
+        upsert: true,
+        contentType: avatarFile.type,
+      });
 
     if (uploadError) {
       redirect(
         "/profile?message=" +
-          encodeURIComponent(`画像のアップロードに失敗しました: ${uploadError.message}`)
+          encodeURIComponent(
+            `画像のアップロードに失敗しました: ${uploadError.message}`
+          )
       );
     }
 
-    const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(storagePath);
+    const { data: publicUrlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(storagePath);
+
     uploadedAvatarUrl = publicUrlData.publicUrl;
   }
 
   const avatarUrl = decideAvatarUrlForSave({
-    currentAvatarUrl: currentProfile?.avatar_url ?? null,
+    currentAvatarUrl,
     uploadedAvatarUrl,
   });
 
@@ -93,6 +113,15 @@ export async function saveProfile(formData: FormData) {
 
   if (error) {
     redirect("/profile?message=" + encodeURIComponent(`保存に失敗しました: ${error.message}`));
+  }
+
+  const oldAvatarStoragePath = getOldAvatarStoragePathForDelete({
+    currentAvatarUrl,
+    nextAvatarUrl: avatarUrl,
+  });
+
+  if (oldAvatarStoragePath) {
+    await supabase.storage.from("avatars").remove([oldAvatarStoragePath]);
   }
 
   redirect("/profile?message=" + encodeURIComponent("プロフィールを保存しました"));
