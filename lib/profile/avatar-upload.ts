@@ -44,7 +44,7 @@ export function buildAvatarStoragePath(
     ? fileName.split(".").pop()?.toLowerCase() || "jpg"
     : "jpg";
 
-  return `${AVATAR_BUCKET_NAME}/${userId}-${timestamp}.${extension}`;
+  return `${userId}-${timestamp}.${extension}`;
 }
 
 export function extractAvatarStoragePathFromUrl(
