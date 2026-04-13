@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/action";
 import { prepareProfileInput } from "@/lib/profile/prepare-profile-input";
+import { buildAvatarStoragePath, validateAvatarFile } from "@/lib/profile/avatar-upload";
+import { decideAvatarUrlForSave } from "@/lib/profile/avatar-upload-plan";
 
 export async function saveProfile(formData: FormData) {
   const supabase = await createClient();
@@ -14,6 +16,19 @@ export async function saveProfile(formData: FormData) {
 
   if (userError || !user) {
     redirect("/login");
+  }
+
+  const { data: currentProfile, error: currentProfileError } = await supabase
+    .from("profiles")
+    .select("avatar_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (currentProfileError) {
+    redirect(
+      "/profile?message=" +
+        encodeURIComponent(`プロフィールの取得に失敗しました: ${currentProfileError.message}`)
+    );
   }
 
   const prepared = prepareProfileInput({
@@ -29,6 +44,42 @@ export async function saveProfile(formData: FormData) {
     redirect("/profile?message=" + encodeURIComponent(prepared.message));
   }
 
+  const avatarFileValue = formData.get("avatar");
+  const avatarFile =
+    avatarFileValue instanceof File && avatarFileValue.size > 0 ? avatarFileValue : null;
+
+  const avatarValidation = validateAvatarFile(avatarFile);
+
+  if (!avatarValidation.valid) {
+    redirect("/profile?message=" + encodeURIComponent(avatarValidation.message));
+  }
+
+  let uploadedAvatarUrl: string | null = null;
+
+  if (avatarFile) {
+    const storagePath = buildAvatarStoragePath(user.id, avatarFile.name, Date.now());
+
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(storagePath, avatarFile, {
+      upsert: true,
+      contentType: avatarFile.type,
+    });
+
+    if (uploadError) {
+      redirect(
+        "/profile?message=" +
+          encodeURIComponent(`画像のアップロードに失敗しました: ${uploadError.message}`)
+      );
+    }
+
+    const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(storagePath);
+    uploadedAvatarUrl = publicUrlData.publicUrl;
+  }
+
+  const avatarUrl = decideAvatarUrlForSave({
+    currentAvatarUrl: currentProfile?.avatar_url ?? null,
+    uploadedAvatarUrl,
+  });
+
   const { error } = await supabase.from("profiles").upsert({
     id: user.id,
     username: prepared.data.username,
@@ -37,6 +88,7 @@ export async function saveProfile(formData: FormData) {
     weight_kg: prepared.data.weight_kg,
     ftp_w: prepared.data.ftp_w,
     bio: prepared.data.bio,
+    avatar_url: avatarUrl,
   });
 
   if (error) {

@@ -97,6 +97,20 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             </div>
 
             <div className="space-y-1">
+              <label htmlFor="avatar" className="block text-sm font-medium">
+                アバター画像
+              </label>
+              <input
+                id="avatar"
+                name="avatar"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="w-full rounded border bg-transparent px-3 py-2"
+              />
+              <p className="text-xs text-gray-400">jpg / jpeg / png / webp、5MB以下</p>
+            </div>
+
+            <div className="space-y-1">
               <label htmlFor="display_name" className="block text-sm font-medium">
                 表示名
               </label>
