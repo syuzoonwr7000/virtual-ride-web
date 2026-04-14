@@ -50,6 +50,8 @@ export async function saveProfile(formData: FormData) {
     redirect("/profile?message=" + encodeURIComponent(prepared.message));
   }
 
+  const removeAvatar = formData.get("remove_avatar") === "on";
+
   const avatarFileValue = formData.get("avatar");
   const avatarFile =
     avatarFileValue instanceof File && avatarFileValue.size > 0
@@ -65,7 +67,7 @@ export async function saveProfile(formData: FormData) {
   const currentAvatarUrl = currentProfile?.avatar_url ?? null;
   let uploadedAvatarUrl: string | null = null;
 
-  if (avatarFile) {
+  if (avatarFile && !removeAvatar) {
     const storagePath = buildAvatarStoragePath(
       user.id,
       avatarFile.name,
@@ -98,6 +100,7 @@ export async function saveProfile(formData: FormData) {
   const avatarUrl = decideAvatarUrlForSave({
     currentAvatarUrl,
     uploadedAvatarUrl,
+    removeAvatar,
   });
 
   const { error } = await supabase.from("profiles").upsert({
@@ -112,7 +115,9 @@ export async function saveProfile(formData: FormData) {
   });
 
   if (error) {
-    redirect("/profile?message=" + encodeURIComponent(`保存に失敗しました: ${error.message}`));
+    redirect(
+      "/profile?message=" + encodeURIComponent(`保存に失敗しました: ${error.message}`)
+    );
   }
 
   const oldAvatarStoragePath = getOldAvatarStoragePathForDelete({

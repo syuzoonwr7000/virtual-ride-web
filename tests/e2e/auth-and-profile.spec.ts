@@ -203,7 +203,7 @@ test.describe("auth and profile e2e", () => {
       mimeType: "image/png",
       buffer: Buffer.from(
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wn8n6sAAAAASUVORK5CYII=",
-        "base64",
+        "base64"
       ),
     });
 
@@ -230,5 +230,65 @@ test.describe("auth and profile e2e", () => {
     const publicAvatarSrc = await publicAvatarImage.first().getAttribute("src");
     expect(publicAvatarSrc).toBeTruthy();
     expect(publicAvatarSrc).toBe(profileAvatarSrc);
+  });
+
+  test("アバター画像を削除するとプロフィール画面と公開プロフィール画面の両方で画像表示が消える", async ({
+    page,
+  }) => {
+    await login(page);
+
+    await page.goto("/profile");
+    await expect(page.getByRole("heading", { name: "プロフィール編集" })).toBeVisible();
+
+    const suffix = Date.now().toString().slice(-6);
+    const username = `e2e_user_${suffix}`;
+    const displayName = `E2Eアバター削除表示名-${suffix}`;
+
+    await page.locator('input[name="username"]').fill(username);
+    await page.locator('input[name="display_name"]').fill(displayName);
+
+    const avatarInput = page.locator('input[type="file"][name="avatar"]');
+    await expect(avatarInput).toHaveCount(1);
+
+    await avatarInput.setInputFiles({
+      name: "avatar.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wn8n6sAAAAASUVORK5CYII=",
+        "base64"
+      ),
+    });
+
+    await page.getByRole("button", { name: "保存する" }).click();
+    await page.waitForURL(/\/profile\?message=/);
+    await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
+
+    const uploadedAvatarImage = page.locator('img[alt*="avatar" i], img[alt*="アバター"]');
+    await expect(uploadedAvatarImage.first()).toBeVisible();
+
+    const removeAvatarCheckbox = page.locator('input[type="checkbox"][name="remove_avatar"]');
+    await expect(removeAvatarCheckbox).toHaveCount(1);
+    await removeAvatarCheckbox.check();
+
+    await page.getByRole("button", { name: "保存する" }).click();
+    await page.waitForURL(/\/profile\?message=/);
+    await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
+
+    await expect(page.locator('img[alt*="avatar" i], img[alt*="アバター"]')).toHaveCount(0);
+    await expect(
+      page
+        .locator("section")
+        .filter({ hasText: "現在のアバター" })
+        .locator("div.rounded-full")
+        .first()
+    ).toBeVisible();
+
+    await page.goto(`/users/${username}`);
+    await expect(page.getByRole("heading", { name: "公開プロフィール" })).toBeVisible();
+    await expect(page.getByText(username)).toBeVisible();
+    await expect(page.getByText(displayName)).toBeVisible();
+
+    await expect(page.locator('img[alt*="avatar" i], img[alt*="アバター"]')).toHaveCount(0);
+    await expect(page.locator("div.rounded-full").first()).toBeVisible();
   });
 });

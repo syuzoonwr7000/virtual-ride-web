@@ -110,6 +110,26 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               <p className="text-xs text-gray-400">jpg / jpeg / png / webp、5MB以下</p>
             </div>
 
+            {profile?.avatar_url ? (
+              <div className="space-y-1">
+                <label
+                  htmlFor="remove_avatar"
+                  className="flex cursor-pointer items-center gap-2 text-sm"
+                >
+                  <input
+                    id="remove_avatar"
+                    name="remove_avatar"
+                    type="checkbox"
+                    className="h-4 w-4"
+                  />
+                  <span>現在のアバターを削除する</span>
+                </label>
+                <p className="text-xs text-gray-400">
+                  チェックして保存すると現在のアバター画像を削除します
+                </p>
+              </div>
+            ) : null}
+
             <div className="space-y-1">
               <label htmlFor="display_name" className="block text-sm font-medium">
                 表示名
