@@ -155,7 +155,7 @@ test.describe("auth and profile e2e", () => {
     await page.waitForURL(/\/profile\?message=/);
     await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
 
-    const publicProfileLink = page.locator(`a[href="/users/${username}"]`);
+    const publicProfileLink = page.getByTestId("public-profile-link");
     await expect(publicProfileLink).toBeVisible();
 
     await Promise.all([
@@ -195,7 +195,7 @@ test.describe("auth and profile e2e", () => {
     await page.locator('input[name="username"]').fill(username);
     await page.locator('input[name="display_name"]').fill(displayName);
 
-    const avatarInput = page.locator('input[type="file"][name="avatar"]');
+    const avatarInput = page.getByTestId("avatar-file-input");
     await expect(avatarInput).toHaveCount(1);
 
     await avatarInput.setInputFiles({
@@ -212,10 +212,10 @@ test.describe("auth and profile e2e", () => {
 
     await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
 
-    const profileAvatarImage = page.locator('img[alt*="avatar" i], img[alt*="アバター"]');
-    await expect(profileAvatarImage.first()).toBeVisible();
+    const profileAvatarImage = page.getByTestId("profile-avatar-image");
+    await expect(profileAvatarImage).toBeVisible();
 
-    const profileAvatarSrc = await profileAvatarImage.first().getAttribute("src");
+    const profileAvatarSrc = await profileAvatarImage.getAttribute("src");
     expect(profileAvatarSrc).toBeTruthy();
     expect(profileAvatarSrc).toMatch(/^https?:\/\//);
 
@@ -224,10 +224,10 @@ test.describe("auth and profile e2e", () => {
     await expect(page.getByText(username)).toBeVisible();
     await expect(page.getByText(displayName)).toBeVisible();
 
-    const publicAvatarImage = page.locator('img[alt*="avatar" i], img[alt*="アバター"]');
-    await expect(publicAvatarImage.first()).toBeVisible();
+    const publicAvatarImage = page.getByTestId("public-avatar-image");
+    await expect(publicAvatarImage).toBeVisible();
 
-    const publicAvatarSrc = await publicAvatarImage.first().getAttribute("src");
+    const publicAvatarSrc = await publicAvatarImage.getAttribute("src");
     expect(publicAvatarSrc).toBeTruthy();
     expect(publicAvatarSrc).toBe(profileAvatarSrc);
   });
@@ -247,7 +247,7 @@ test.describe("auth and profile e2e", () => {
     await page.locator('input[name="username"]').fill(username);
     await page.locator('input[name="display_name"]').fill(displayName);
 
-    const avatarInput = page.locator('input[type="file"][name="avatar"]');
+    const avatarInput = page.getByTestId("avatar-file-input");
     await expect(avatarInput).toHaveCount(1);
 
     await avatarInput.setInputFiles({
@@ -263,10 +263,10 @@ test.describe("auth and profile e2e", () => {
     await page.waitForURL(/\/profile\?message=/);
     await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
 
-    const uploadedAvatarImage = page.locator('img[alt*="avatar" i], img[alt*="アバター"]');
-    await expect(uploadedAvatarImage.first()).toBeVisible();
+    const uploadedAvatarImage = page.getByTestId("profile-avatar-image");
+    await expect(uploadedAvatarImage).toBeVisible();
 
-    const removeAvatarCheckbox = page.locator('input[type="checkbox"][name="remove_avatar"]');
+    const removeAvatarCheckbox = page.getByTestId("remove-avatar-checkbox");
     await expect(removeAvatarCheckbox).toHaveCount(1);
     await removeAvatarCheckbox.check();
 
@@ -274,21 +274,15 @@ test.describe("auth and profile e2e", () => {
     await page.waitForURL(/\/profile\?message=/);
     await expect(page.getByText("プロフィールを保存しました")).toBeVisible();
 
-    await expect(page.locator('img[alt*="avatar" i], img[alt*="アバター"]')).toHaveCount(0);
-    await expect(
-      page
-        .locator("section")
-        .filter({ hasText: "現在のアバター" })
-        .locator("div.rounded-full")
-        .first()
-    ).toBeVisible();
+    await expect(page.getByTestId("profile-avatar-image")).toHaveCount(0);
+    await expect(page.getByTestId("profile-avatar-fallback")).toBeVisible();
 
     await page.goto(`/users/${username}`);
     await expect(page.getByRole("heading", { name: "公開プロフィール" })).toBeVisible();
     await expect(page.getByText(username)).toBeVisible();
     await expect(page.getByText(displayName)).toBeVisible();
 
-    await expect(page.locator('img[alt*="avatar" i], img[alt*="アバター"]')).toHaveCount(0);
-    await expect(page.locator("div.rounded-full").first()).toBeVisible();
+    await expect(page.getByTestId("public-avatar-image")).toHaveCount(0);
+    await expect(page.getByTestId("public-avatar-fallback")).toBeVisible();
   });
 });

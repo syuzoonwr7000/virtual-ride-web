@@ -41,10 +41,14 @@ export default async function PublicProfilePage({ params }: PageProps) {
             <img
               src={profile.avatarUrl}
               alt={`${profile.displayName}のアバター`}
+              data-testid="public-avatar-image"
               className="h-20 w-20 rounded-full border object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border text-2xl font-bold">
+            <div
+              data-testid="public-avatar-fallback"
+              className="flex h-20 w-20 items-center justify-center rounded-full border text-2xl font-bold"
+            >
               {avatarFallback}
             </div>
           )}

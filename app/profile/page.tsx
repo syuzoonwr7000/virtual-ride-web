@@ -62,10 +62,14 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             <img
               src={profile.avatar_url}
               alt="現在のアバター"
+              data-testid="profile-avatar-image"
               className="h-20 w-20 rounded-full border object-cover"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border text-2xl font-bold">
+            <div
+              data-testid="profile-avatar-fallback"
+              className="flex h-20 w-20 items-center justify-center rounded-full border text-2xl font-bold"
+            >
               {avatarFallback}
             </div>
           )}
@@ -75,6 +79,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           <section className="rounded border p-4">
             <Link
               href={publicProfilePath}
+              data-testid="public-profile-link"
               className="text-sm underline underline-offset-4 hover:opacity-80"
             >
               公開プロフィールを見る
@@ -105,6 +110,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 name="avatar"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
+                data-testid="avatar-file-input"
                 className="w-full rounded border bg-transparent px-3 py-2"
               />
               <p className="text-xs text-gray-400">jpg / jpeg / png / webp、5MB以下</p>
@@ -120,6 +126,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     id="remove_avatar"
                     name="remove_avatar"
                     type="checkbox"
+                    data-testid="remove-avatar-checkbox"
                     className="h-4 w-4"
                   />
                   <span>現在のアバターを削除する</span>
