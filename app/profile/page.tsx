@@ -11,9 +11,30 @@ type ProfilePageProps = {
   }>;
 };
 
+function getMessageVariant(message: string | null) {
+  if (!message) {
+    return null;
+  }
+
+  if (
+    message.includes("失敗") ||
+    message.includes("できません") ||
+    message.includes("エラー")
+  ) {
+    return "error";
+  }
+
+  if (message.includes("保存しました")) {
+    return "success";
+  }
+
+  return "info";
+}
+
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const params = await searchParams;
   const message = params.message ? decodeURIComponent(params.message) : null;
+  const messageVariant = getMessageVariant(message);
 
   const supabase = await createClient();
 
@@ -44,13 +65,22 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         <h1 className="text-2xl font-bold">プロフィール編集</h1>
 
         {message ? (
-          <div className="rounded border border-white/20 bg-white/5 p-4 text-sm">
+          <div
+            className={[
+              "rounded border p-4 text-sm",
+              messageVariant === "success"
+                ? "border-green-500/40 bg-green-500/10 text-green-100"
+                : messageVariant === "error"
+                  ? "border-red-500/40 bg-red-500/10 text-red-100"
+                  : "border-white/20 bg-white/5 text-white",
+            ].join(" ")}
+          >
             {message}
           </div>
         ) : null}
 
         {profileError ? (
-          <div className="rounded border border-red-500/40 bg-red-500/10 p-4 text-sm">
+          <div className="rounded border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-100">
             プロフィールの取得に失敗しました: {profileError.message}
           </div>
         ) : null}
@@ -159,6 +189,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 defaultValue={profile?.username ?? ""}
                 className="w-full rounded border bg-transparent px-3 py-2"
               />
+              <p className="text-xs text-gray-400">
+                3〜20文字。英小文字 / 数字 / _
+                が使えます。先頭・末尾は英数字、_ の連続は使えません。
+              </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
