@@ -72,7 +72,7 @@ test.describe("auth and profile e2e", () => {
     await expect(page.locator('textarea[name="bio"]')).toHaveValue(bio);
 
     await expect(page.getByText(displayName)).toBeVisible();
-    await expect(page.getByText(`"ftp_w": ${ftp}`)).toBeVisible();
+    await expect(page.getByText(`${ftp}W`)).toBeVisible();
   });
 
   test("/profile で username を更新できる", async ({ page }) => {
