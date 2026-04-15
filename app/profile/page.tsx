@@ -103,6 +103,11 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               {avatarFallback}
             </div>
           )}
+
+          <p className="mt-3 text-xs leading-5 text-gray-400">
+            公開プロフィールにもこのアバターが表示されます。画像を設定していない場合は、
+            表示名またはユーザー名の先頭文字が表示されます。
+          </p>
         </section>
 
         {publicProfilePath ? (
@@ -118,7 +123,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         ) : null}
 
         <section className="rounded border p-4">
-          <form action={saveProfile} className="space-y-4">
+          <form action={saveProfile} className="space-y-5">
             <div className="space-y-1">
               <label htmlFor="email" className="block text-sm font-medium">
                 メールアドレス
@@ -129,6 +134,9 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 disabled
                 className="w-full rounded border bg-transparent px-3 py-2 opacity-70"
               />
+              <p className="text-xs text-gray-400">
+                ログインに使用しているメールアドレスです。ここでは変更できません。
+              </p>
             </div>
 
             <div className="space-y-1">
@@ -143,14 +151,19 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 data-testid="avatar-file-input"
                 className="w-full rounded border bg-transparent px-3 py-2"
               />
-              <p className="text-xs text-gray-400">jpg / jpeg / png / webp、5MB以下</p>
+              <p className="text-xs text-gray-400">
+                jpg / jpeg / png / webp に対応しています。ファイルサイズは5MB以下にしてください。
+              </p>
+              <p className="text-xs text-gray-400">
+                新しい画像を保存すると、公開プロフィールのアバターも更新されます。
+              </p>
             </div>
 
             {profile?.avatar_url ? (
-              <div className="space-y-1">
+              <div className="space-y-1 rounded border border-yellow-500/30 bg-yellow-500/5 p-3">
                 <label
                   htmlFor="remove_avatar"
-                  className="flex cursor-pointer items-center gap-2 text-sm"
+                  className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                 >
                   <input
                     id="remove_avatar"
@@ -161,8 +174,11 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   />
                   <span>現在のアバターを削除する</span>
                 </label>
-                <p className="text-xs text-gray-400">
-                  チェックして保存すると現在のアバター画像を削除します
+                <p className="text-xs leading-5 text-yellow-100/80">
+                  チェックして保存すると、現在のアバター画像はプロフィールと公開プロフィールの両方から削除されます。
+                </p>
+                <p className="text-xs leading-5 text-yellow-100/80">
+                  削除後は、表示名またはユーザー名の先頭文字が代わりに表示されます。
                 </p>
               </div>
             ) : null}
@@ -177,6 +193,9 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 defaultValue={profile?.display_name ?? ""}
                 className="w-full rounded border bg-transparent px-3 py-2"
               />
+              <p className="text-xs text-gray-400">
+                公開プロフィールで最初に目に入る名前です。未設定の場合はユーザー名が表示されます。
+              </p>
             </div>
 
             <div className="space-y-1">
@@ -190,8 +209,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 className="w-full rounded border bg-transparent px-3 py-2"
               />
               <p className="text-xs text-gray-400">
-                3〜20文字。英小文字 / 数字 / _
-                が使えます。先頭・末尾は英数字、_ の連続は使えません。
+                公開プロフィールのURLに使われます。3〜20文字、英小文字・数字・_ が使えます。
+              </p>
+              <p className="text-xs text-gray-400">
+                先頭と末尾は英数字のみ、_ の連続は使えません。
               </p>
             </div>
 
@@ -207,6 +228,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   defaultValue={profile?.height_cm ?? ""}
                   className="w-full rounded border bg-transparent px-3 py-2"
                 />
+                <p className="text-xs text-gray-400">公開プロフィールの基本情報に表示されます。</p>
               </div>
 
               <div className="space-y-1">
@@ -221,6 +243,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   defaultValue={profile?.weight_kg ?? ""}
                   className="w-full rounded border bg-transparent px-3 py-2"
                 />
+                <p className="text-xs text-gray-400">小数1桁まで入力できます。</p>
               </div>
 
               <div className="space-y-1">
@@ -234,6 +257,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   defaultValue={profile?.ftp_w ?? ""}
                   className="w-full rounded border bg-transparent px-3 py-2"
                 />
+                <p className="text-xs text-gray-400">サイクリング向けのプロフィール情報として表示されます。</p>
               </div>
             </div>
 
@@ -248,6 +272,9 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 defaultValue={profile?.bio ?? ""}
                 className="w-full rounded border bg-transparent px-3 py-2"
               />
+              <p className="text-xs text-gray-400">
+                活動内容や目標、ひとことなどを自由に書けます。公開プロフィールにそのまま表示されます。
+              </p>
             </div>
 
             <button
