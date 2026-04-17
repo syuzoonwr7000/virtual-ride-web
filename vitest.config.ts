@@ -3,8 +3,10 @@ import path from "node:path";
 
 export default defineConfig({
   test: {
-    include: ["tests/lib/**/*.test.ts"],
+    environment: "jsdom",
+    include: ["tests/**/*.test.{ts,tsx}"],
     exclude: ["tests/e2e/**", "node_modules/**", ".next/**"],
+    setupFiles: ["tests/setup.ts"],
   },
   resolve: {
     alias: {
