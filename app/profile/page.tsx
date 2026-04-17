@@ -117,8 +117,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             )}
 
             <p className="mt-3 max-w-xs text-xs leading-5 text-gray-400">
-              公開プロフィールにもこのアバターが表示されます。画像がない場合は、
-              表示名またはユーザー名の先頭文字が表示されます。
+              公開プロフィールにも表示されます。画像がない場合は、表示名またはユーザー名の先頭文字が表示されます。
             </p>
           </div>
 
@@ -126,7 +125,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             <section className="rounded-lg border p-5">
               <h2 className="mb-2 text-lg font-semibold">公開プロフィール</h2>
               <p className="mb-3 text-sm text-gray-400">
-                公開プロフィールでは、表示名・ユーザー名・アバター・基本情報・自己紹介が表示されます。
+                表示名、ユーザー名、アバター、基本情報、自己紹介が公開されます。
               </p>
 
               {publicProfilePath ? (
@@ -147,7 +146,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             <section className="rounded-lg border p-5">
               <h2 className="mb-2 text-lg font-semibold">現在のプロフィール内容</h2>
               <p className="mb-4 text-sm text-gray-400">
-                今保存されているプロフィール内容です。
+                現在保存されている内容です。
               </p>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -207,7 +206,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         <section className="rounded-lg border p-5">
           <h2 className="mb-1 text-lg font-semibold">編集フォーム</h2>
           <p className="mb-5 text-sm text-gray-400">
-            内容を変更したら保存してください。公開プロフィールにも反映されます。
+            変更した内容は保存後に反映されます。
           </p>
 
           <form action={saveProfile} className="space-y-6">
@@ -215,7 +214,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               <div>
                 <h3 className="text-base font-semibold">アカウント情報</h3>
                 <p className="text-sm text-gray-400">
-                  ログイン情報と公開プロフィールの基本設定です。
+                  公開プロフィールの基本設定です。
                 </p>
               </div>
 
@@ -245,7 +244,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   className="w-full rounded border bg-transparent px-3 py-2"
                 />
                 <p className="text-xs text-gray-400">
-                  公開プロフィールで最初に目に入る名前です。未設定の場合はユーザー名が表示されます。
+                  公開プロフィールで目立つ名前です。未設定の場合はユーザー名が表示されます。
                 </p>
               </div>
 
@@ -289,10 +288,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   className="w-full rounded border bg-transparent px-3 py-2"
                 />
                 <p className="text-xs text-gray-400">
-                  jpg / jpeg / png / webp に対応しています。ファイルサイズは5MB以下にしてください。
+                  jpg / jpeg / png / webp に対応しています。5MB以下の画像を選択してください。
                 </p>
                 <p className="text-xs text-gray-400">
-                  新しい画像を保存すると、公開プロフィールのアバターも更新されます。
+                  保存すると、公開プロフィールのアバターも更新されます。
                 </p>
               </div>
 
@@ -312,10 +311,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     <span>現在のアバターを削除する</span>
                   </label>
                   <p className="text-xs leading-5 text-yellow-100/80">
-                    チェックして保存すると、現在のアバター画像はプロフィールと公開プロフィールの両方から削除されます。
+                    チェックして保存すると、プロフィールと公開プロフィールの両方から削除されます。
                   </p>
                   <p className="text-xs leading-5 text-yellow-100/80">
-                    削除後は、表示名またはユーザー名の先頭文字が代わりに表示されます。
+                    削除後は、表示名またはユーザー名の先頭文字が表示されます。
                   </p>
                 </div>
               ) : null}
@@ -358,7 +357,9 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     defaultValue={profile?.weight_kg ?? ""}
                     className="w-full rounded border bg-transparent px-3 py-2"
                   />
-                  <p className="text-xs text-gray-400">小数1桁まで入力できます。</p>
+                  <p className="text-xs text-gray-400">
+                    小数1桁まで入力できます。
+                  </p>
                 </div>
 
                 <div className="space-y-1">
@@ -399,12 +400,15 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                   className="w-full rounded border bg-transparent px-3 py-2"
                 />
                 <p className="text-xs text-gray-400">
-                  活動内容や目標、ひとことなどを自由に書けます。公開プロフィールにそのまま表示されます。
+                  活動内容、目標、ひとことなどを自由に書けます。公開プロフィールに表示されます。
                 </p>
               </div>
             </section>
 
             <div className="border-t pt-6">
+              <div className="mb-3 text-xs text-gray-400">
+                保存すると、この画面と公開プロフィールの表示内容が更新されます。
+              </div>
               <button
                 type="submit"
                 className="rounded bg-white px-4 py-2 text-black hover:opacity-90"
