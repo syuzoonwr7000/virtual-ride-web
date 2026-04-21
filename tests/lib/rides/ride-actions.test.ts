@@ -98,4 +98,31 @@ describe("saveRideDraft", () => {
       },
     ]);
   });
+  
+  it("保存成功後に /rides へリダイレクトする", async () => {
+    getUserMock.mockResolvedValue({
+        data: {
+        user: { id: "user-1" },
+        },
+        error: null,
+    });
+
+    insertMock.mockResolvedValue({
+        error: null,
+        data: [{ id: "ride-1" }],
+    });
+
+    const formData = new FormData();
+    formData.set("title", "保存成功テスト");
+    formData.set("description", "");
+    formData.set("video_url", "");
+    formData.set("thumbnail_url", "");
+    formData.set("activity_date", "");
+    formData.set("distance_km", "");
+    formData.set("elevation_m", "");
+
+    await saveRideDraft(formData);
+
+    expect(redirectMock).toHaveBeenCalledWith("/rides");
+  });
 });

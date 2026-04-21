@@ -44,4 +44,6 @@ export async function saveRideDraft(formData: FormData) {
   if (error) {
     throw new Error("ライド下書きの保存に失敗しました");
   }
+
+  redirect("/rides");
 }
