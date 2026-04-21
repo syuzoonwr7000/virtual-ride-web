@@ -125,4 +125,33 @@ describe("saveRideDraft", () => {
 
     expect(redirectMock).toHaveBeenCalledWith("/rides");
   });
+
+  it("保存失敗時はエラーを投げる", async () => {
+    getUserMock.mockResolvedValue({
+        data: {
+        user: { id: "user-1" },
+        },
+        error: null,
+    });
+
+    insertMock.mockResolvedValue({
+        error: { message: "insert failed" },
+        data: null,
+    });
+
+    const formData = new FormData();
+    formData.set("title", "保存失敗テスト");
+    formData.set("description", "");
+    formData.set("video_url", "");
+    formData.set("thumbnail_url", "");
+    formData.set("activity_date", "");
+    formData.set("distance_km", "");
+    formData.set("elevation_m", "");
+
+    await expect(saveRideDraft(formData)).rejects.toThrow(
+        "ライド下書きの保存に失敗しました",
+    );
+
+    expect(redirectMock).not.toHaveBeenCalledWith("/rides");
+  });
 });
