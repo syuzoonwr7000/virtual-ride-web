@@ -1,3 +1,5 @@
+import { saveRideDraft } from "@/lib/rides/ride-actions";
+
 export default function NewRidePage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
@@ -12,7 +14,7 @@ export default function NewRidePage() {
           </p>
         </header>
 
-        <form className="space-y-6">
+        <form action={saveRideDraft} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="title" className="block text-sm font-medium">
               タイトル
