@@ -154,4 +154,30 @@ describe("saveRideDraft", () => {
 
     expect(redirectMock).not.toHaveBeenCalledWith("/rides");
   });
+
+  it("title が空なら保存せずにエラーを投げる", async () => {
+    getUserMock.mockResolvedValue({
+      data: {
+        user: { id: "user-1" },
+      },
+      error: null,
+    });
+
+    const formData = new FormData();
+    formData.set("title", "   ");
+    formData.set("description", "");
+    formData.set("video_url", "");
+    formData.set("thumbnail_url", "");
+    formData.set("activity_date", "");
+    formData.set("distance_km", "");
+    formData.set("elevation_m", "");
+
+    await expect(saveRideDraft(formData)).rejects.toThrow(
+      "タイトルは必須です",
+    );
+
+    expect(fromMock).not.toHaveBeenCalled();
+    expect(insertMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalledWith("/rides");
+  });
 });

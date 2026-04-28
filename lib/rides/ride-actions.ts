@@ -17,6 +17,12 @@ export async function saveRideDraft(formData: FormData) {
     return;
   }
 
+  const rawTitle = String(formData.get("title") ?? "");
+
+  if (rawTitle.trim() === "") {
+    throw new Error("タイトルは必須です");
+  }
+  
   const prepared = prepareRideInput({
     title: String(formData.get("title") ?? ""),
     description: String(formData.get("description") ?? ""),
@@ -26,6 +32,10 @@ export async function saveRideDraft(formData: FormData) {
     distance_km: String(formData.get("distance_km") ?? ""),
     elevation_m: String(formData.get("elevation_m") ?? ""),
   });
+
+  if (prepared.title === "") {
+    throw new Error("タイトルは必須です");
+  }
 
   const { error } = await supabase.from("rides").insert([
     {
