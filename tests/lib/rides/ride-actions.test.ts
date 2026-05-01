@@ -58,7 +58,7 @@ describe("saveRideDraft", () => {
     const formData = new FormData();
     formData.set("title", "テスト");
 
-    await saveRideDraft(formData);
+    await saveRideDraft({ error: null }, formData);
 
     expect(redirectMock).toHaveBeenCalledWith("/login");
     expect(fromMock).not.toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe("saveRideDraft", () => {
     formData.set("distance_km", "");
     formData.set("elevation_m", "");
 
-    await saveRideDraft(formData);
+    await saveRideDraft({ error: null }, formData);
 
     expect(fromMock).toHaveBeenCalledWith("rides");
     expect(insertMock).toHaveBeenCalledWith([
@@ -121,7 +121,7 @@ describe("saveRideDraft", () => {
     formData.set("distance_km", "");
     formData.set("elevation_m", "");
 
-    await saveRideDraft(formData);
+    await saveRideDraft({ error: null }, formData);
 
     expect(redirectMock).toHaveBeenCalledWith("/rides");
   });

@@ -46,4 +46,19 @@ describe("app/rides/new/page.tsx", () => {
       screen.getByRole("button", { name: "下書き保存" }),
     ).toBeInTheDocument();
   });
+
+  it("title 未入力でエラーメッセージを表示する", async () => {
+    const Page = await NewRidePage();
+    render(Page);
+
+    const button = screen.getByRole("button", { name: "下書き保存" });
+
+    // フォーム送信（title空）
+    button.click();
+
+    // エラー表示を期待
+    expect(
+      await screen.findByText("タイトルは必須です")
+    ).toBeInTheDocument();
+  });
 });

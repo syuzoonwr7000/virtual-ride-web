@@ -4,7 +4,16 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/action";
 import { prepareRideInput } from "@/lib/rides/ride-input";
 
-export async function saveRideDraft(formData: FormData) {
+export async function saveRideDraft(
+  prevState: { error: string | null },
+  formData: FormData
+) {
+  const rawTitle = String(formData.get("title") ?? "");
+
+  if (rawTitle.trim() === "") {
+    return { error: "タイトルは必須です" };
+  }
+
   const supabase = await createClient();
 
   const {
@@ -14,7 +23,7 @@ export async function saveRideDraft(formData: FormData) {
 
   if (userError || !user) {
     redirect("/login");
-    return;
+    return { error: null };
   }
 
   const rawTitle = String(formData.get("title") ?? "");
@@ -56,4 +65,5 @@ export async function saveRideDraft(formData: FormData) {
   }
 
   redirect("/rides");
+  return { error: null };
 }
