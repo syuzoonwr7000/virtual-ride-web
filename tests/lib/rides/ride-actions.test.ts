@@ -7,7 +7,10 @@ const insertMock = vi.fn();
 const fromMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  redirect: (path: string) => redirectMock(path),
+  redirect: (path: string) => {
+    redirectMock(path);
+    throw new Error(`NEXT_REDIRECT:${path}`);
+  },
 }));
 
 vi.mock("@/lib/supabase/action", () => ({
@@ -58,7 +61,9 @@ describe("saveRideDraft", () => {
     const formData = new FormData();
     formData.set("title", "テスト");
 
-    await saveRideDraft({ error: null }, formData);
+    await expect(
+      saveRideDraft({ error: null }, formData)
+    ).rejects.toThrow("NEXT_REDIRECT:/login");
 
     expect(redirectMock).toHaveBeenCalledWith("/login");
     expect(fromMock).not.toHaveBeenCalled();
@@ -81,9 +86,12 @@ describe("saveRideDraft", () => {
     formData.set("distance_km", "");
     formData.set("elevation_m", "");
 
-    await saveRideDraft({ error: null }, formData);
+    await expect(
+      saveRideDraft({ error: null }, formData)
+    ).rejects.toThrow("NEXT_REDIRECT:/rides");
 
     expect(fromMock).toHaveBeenCalledWith("rides");
+
     expect(insertMock).toHaveBeenCalledWith([
       {
         user_id: "user-1",
@@ -98,18 +106,18 @@ describe("saveRideDraft", () => {
       },
     ]);
   });
-  
+
   it("保存成功後に /rides へリダイレクトする", async () => {
     getUserMock.mockResolvedValue({
-        data: {
+      data: {
         user: { id: "user-1" },
-        },
-        error: null,
+      },
+      error: null,
     });
 
     insertMock.mockResolvedValue({
-        error: null,
-        data: [{ id: "ride-1" }],
+      error: null,
+      data: [{ id: "ride-1" }],
     });
 
     const formData = new FormData();
@@ -121,22 +129,24 @@ describe("saveRideDraft", () => {
     formData.set("distance_km", "");
     formData.set("elevation_m", "");
 
-    await saveRideDraft({ error: null }, formData);
+    await expect(
+      saveRideDraft({ error: null }, formData)
+    ).rejects.toThrow("NEXT_REDIRECT:/rides");
 
     expect(redirectMock).toHaveBeenCalledWith("/rides");
   });
 
-  it("保存失敗時はエラーを投げる", async () => {
+  it("保存失敗時はエラーを返す", async () => {
     getUserMock.mockResolvedValue({
-        data: {
+      data: {
         user: { id: "user-1" },
-        },
-        error: null,
+      },
+      error: null,
     });
 
     insertMock.mockResolvedValue({
-        error: { message: "insert failed" },
-        data: null,
+      error: { message: "insert failed" },
+      data: null,
     });
 
     const formData = new FormData();
@@ -148,14 +158,16 @@ describe("saveRideDraft", () => {
     formData.set("distance_km", "");
     formData.set("elevation_m", "");
 
-    await expect(saveRideDraft(formData)).rejects.toThrow(
-        "ライド下書きの保存に失敗しました",
-    );
+    await expect(
+      saveRideDraft({ error: null }, formData)
+    ).resolves.toEqual({
+      error: "ライド下書きの保存に失敗しました",
+    });
 
     expect(redirectMock).not.toHaveBeenCalledWith("/rides");
   });
 
-  it("title が空なら保存せずにエラーを投げる", async () => {
+  it("title が空なら保存せずにエラーを返す", async () => {
     getUserMock.mockResolvedValue({
       data: {
         user: { id: "user-1" },
@@ -172,9 +184,11 @@ describe("saveRideDraft", () => {
     formData.set("distance_km", "");
     formData.set("elevation_m", "");
 
-    await expect(saveRideDraft(formData)).rejects.toThrow(
-      "タイトルは必須です",
-    );
+    await expect(
+      saveRideDraft({ error: null }, formData)
+    ).resolves.toEqual({
+      error: "タイトルは必須です",
+    });
 
     expect(fromMock).not.toHaveBeenCalled();
     expect(insertMock).not.toHaveBeenCalled();

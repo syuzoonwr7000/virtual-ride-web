@@ -4,14 +4,20 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/action";
 import { prepareRideInput } from "@/lib/rides/ride-input";
 
+type RideFormState = {
+  error: string | null;
+};
+
 export async function saveRideDraft(
-  prevState: { error: string | null },
+  prevState: RideFormState,
   formData: FormData
-) {
+): Promise<RideFormState> {
   const rawTitle = String(formData.get("title") ?? "");
 
   if (rawTitle.trim() === "") {
-    return { error: "タイトルは必須です" };
+    return {
+      error: "タイトルは必須です",
+    };
   }
 
   const supabase = await createClient();
@@ -23,17 +29,10 @@ export async function saveRideDraft(
 
   if (userError || !user) {
     redirect("/login");
-    return { error: null };
   }
 
-  const rawTitle = String(formData.get("title") ?? "");
-
-  if (rawTitle.trim() === "") {
-    throw new Error("タイトルは必須です");
-  }
-  
   const prepared = prepareRideInput({
-    title: String(formData.get("title") ?? ""),
+    title: rawTitle,
     description: String(formData.get("description") ?? ""),
     video_url: String(formData.get("video_url") ?? ""),
     thumbnail_url: String(formData.get("thumbnail_url") ?? ""),
@@ -43,7 +42,9 @@ export async function saveRideDraft(
   });
 
   if (prepared.title === "") {
-    throw new Error("タイトルは必須です");
+    return {
+      error: "タイトルは必須です",
+    };
   }
 
   const { error } = await supabase.from("rides").insert([
@@ -61,9 +62,10 @@ export async function saveRideDraft(
   ]);
 
   if (error) {
-    throw new Error("ライド下書きの保存に失敗しました");
+    return {
+      error: "ライド下書きの保存に失敗しました",
+    };
   }
 
   redirect("/rides");
-  return { error: null };
 }
