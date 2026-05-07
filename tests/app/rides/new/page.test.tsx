@@ -61,4 +61,6 @@ describe("app/rides/new/page.tsx", () => {
       await screen.findByText("タイトルは必須です")
     ).toBeInTheDocument();
   });
+
+  it("送信中はボタンを無効化する", () => {})
 });

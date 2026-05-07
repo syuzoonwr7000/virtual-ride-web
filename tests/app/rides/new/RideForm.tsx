@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { saveRideDraft } from "@/lib/rides/ride-actions";
+import { SubmitButton } from "./SubmitButton";
 
 export function RideForm() {
   const [state, formAction] = useActionState<
@@ -22,7 +23,7 @@ export function RideForm() {
         <p className="text-red-500 text-sm">{state.error}</p>
       )}
 
-      <button type="submit">下書き保存</button>
+      <SubmitButton />
     </form>
   );
 }
