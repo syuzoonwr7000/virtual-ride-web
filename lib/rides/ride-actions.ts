@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/action";
 import { prepareRideInput } from "@/lib/rides/ride-input";
 
-type RideFormState = {
+export type RideFormState = {
   error: string | null;
+  fieldErrors?: Record<string, string[]>;
 };
 
 export async function saveRideDraft(
@@ -41,11 +42,14 @@ export async function saveRideDraft(
     elevation_m: String(formData.get("elevation_m") ?? ""),
   });
 
-  if (prepared.title === "") {
-    return {
-      error: "タイトルは必須です",
-    };
-  }
+  if (rawTitle.trim() === "") {
+  return {
+    error: "入力内容を確認してください",
+    fieldErrors: {
+      title: ["タイトルは必須です"],
+    },
+  };
+}
 
   const { error } = await supabase.from("rides").insert([
     {

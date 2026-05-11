@@ -63,4 +63,21 @@ describe("app/rides/new/page.tsx", () => {
   });
 
   it("送信中はボタンを無効化する", () => {})
+
+  it("title エラーを入力欄付近に表示する", async () => {
+    const Page = await NewRidePage();
+    render(Page);
+
+    const button = screen.getByRole("button", {
+      name: "下書き保存",
+    });
+
+    button.click();
+
+    const input = screen.getByLabelText("タイトル");
+
+    expect(input).toHaveAccessibleDescription(
+      "タイトルは必須です"
+    );
+  });
 });

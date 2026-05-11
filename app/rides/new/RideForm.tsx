@@ -1,21 +1,45 @@
 "use client";
 
 import { useActionState } from "react";
-import { saveRideDraft } from "@/lib/rides/ride-actions";
-
-type RideFormState = { error: string | null };
+import {
+  saveRideDraft,
+  type RideFormState,
+} from "@/lib/rides/ride-actions";
+import { SubmitButton } from "./SubmitButton";
 
 export function RideForm() {
-  const [state, formAction] = useActionState<RideFormState, FormData>(
+  const initialState: RideFormState = {
+    error: null,
+    fieldErrors: {},
+  };
+
+  const [state, formAction] = useActionState(
     saveRideDraft,
-    { error: null },
+    initialState,
   );
 
   return (
     <form action={formAction} className="space-y-6">
       <div className="space-y-2">
         <label htmlFor="title">タイトル</label>
-        <input id="title" name="title" />
+
+        <input
+          id="title"
+          name="title"
+          aria-describedby={
+            state.fieldErrors?.title ? "title-error" : undefined
+          }
+        />
+
+        {state.fieldErrors?.title?.map((error) => (
+          <p
+            key={error}
+            id="title-error"
+            className="text-red-500 text-sm"
+          >
+            {error}
+          </p>
+        ))}
       </div>
 
       <div className="space-y-2">
@@ -40,17 +64,31 @@ export function RideForm() {
 
       <div className="space-y-2">
         <label htmlFor="distance_km">距離(km)</label>
-        <input id="distance_km" name="distance_km" type="number" step="0.1" />
+        <input
+          id="distance_km"
+          name="distance_km"
+          type="number"
+          step="0.1"
+        />
       </div>
 
       <div className="space-y-2">
         <label htmlFor="elevation_m">獲得標高(m)</label>
-        <input id="elevation_m" name="elevation_m" type="number" step="1" />
+        <input
+          id="elevation_m"
+          name="elevation_m"
+          type="number"
+          step="1"
+        />
       </div>
 
-      {state.error && <p className="text-red-500 text-sm">{state.error}</p>}
+      {state.error && (
+        <p className="text-red-500 text-sm">
+          {state.error}
+        </p>
+      )}
 
-      <button type="submit">下書き保存</button>
+      <SubmitButton />
     </form>
   );
 }
